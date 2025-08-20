@@ -1,7 +1,7 @@
 import re, sqlite3
 from pydantic import BaseModel
 from src.commons.utils import get_list_values
-from src.commons.common_types import DocumentTypes, BiologicalGenre
+from src.commons.common_types import BiologicalGenre, DocumentTypes
 
 sqlite3.connect(':memory:')
 conn = sqlite3.connect('medical_bussiness_db')
@@ -18,3 +18,6 @@ class Patient(BaseModel):
     Telefono: int
     Correo: str
     Sexo_biologico: BiologicalGenre.create(genres) = genres[0]
+
+class History(BaseModel):
+    Documento: int = 74125896

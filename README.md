@@ -1,6 +1,6 @@
 <hgroup>
 <h1>Environment instructions and initial setup</h1>
-<p>Installing python, dependencies and launching server</p>
+<h2>Installing python, dependencies and launching server</h2>
 </hgroup>
 <p>
 <ul>
@@ -13,6 +13,7 @@
 <li>Once you finish the environment setup, run the command to raise the API server
 <code>uvicorn main:app --reload</code></li>
 <li>Then, visit the URL http://127.0.0.1:8000/docs# to get into the swagger interface that let you interact with the backend</li>
+</ul>
 </p>
 <hgroup>
 <h1>Swagger interface and API documentation</h1>

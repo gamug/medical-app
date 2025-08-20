@@ -17,3 +17,15 @@ class Specialities(str, Enum):
     def create(cls, documents):
         enum_dict = {typ: typ for typ in documents}
         return Enum('Specialities', enum_dict, type=str)
+
+class Hospitals(str, Enum):
+    @classmethod
+    def create(cls, documents):
+        enum_dict = {typ: typ for typ in documents}
+        return Enum('Hospitals', enum_dict, type=str)
+
+class Months(str, Enum):
+    @classmethod
+    def create(cls, documents):
+        enum_dict = {typ: typ for typ in documents}
+        return Enum('Months', enum_dict, type=str)

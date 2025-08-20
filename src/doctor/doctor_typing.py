@@ -1,7 +1,7 @@
 import sqlite3
 from pydantic import BaseModel
 from src.commons.utils import get_list_values
-from src.commons.common_types import DocumentTypes, BiologicalGenre, Specialities
+from src.commons.common_types import BiologicalGenre, DocumentTypes, Specialities
 
 sqlite3.connect(':memory:')
 conn = sqlite3.connect('medical_bussiness_db')
