@@ -24,3 +24,7 @@ class Agenda(BaseModel):
     Especialidad_medico: Specialities.create(specialities) = '--'
     Sexo_biologico_medico: BiologicalGenre.create(genres) = '--'
     Hospital_atencion: Hospitals.create(hospitals) = '--'
+
+class BookAppointment(BaseModel):
+    Documento_paciente: int = 13431341
+    Id_turno: int = 640266

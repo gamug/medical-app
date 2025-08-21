@@ -2,10 +2,10 @@ import datetime, sqlite3
 import pandas as pd
 from fastapi import FastAPI, Depends
 
-from src.commons.utils import check_directories, get_ids_equivalence, generate_html_visual, general_validation
+from src.commons.utils import check_directories, get_ids_equivalence, generate_html_visual, general_validation, validate_booking
 from src.patient.patient_typing import History, Patient
 from src.doctor.doctor_typing import Doctor
-from src.agenda.agenda_typing import Agenda
+from src.agenda.agenda_typing import Agenda, BookAppointment
 
 check_directories()
 
@@ -30,7 +30,7 @@ async def add_patient(data: Patient=Depends()):
     """Adicionar paciente"""
     errors = general_validation(cursor, data)
     if len(errors):
-        return errors
+        return errors, 404
     #getting the document and genre ids
     genre, document = data.Sexo_biologico._value_, data.Tipo_documento._value_
     genre = get_ids_equivalence(cursor, genre, 'SEXO_BIOLOGICO', 'SIMBOLO')
@@ -49,7 +49,7 @@ async def add_doctor(data: Doctor=Depends()):
     """Adicionar medico"""
     errors = general_validation(cursor, data)
     if len(errors):
-        return errors
+        return errors, 404
     #getting the document and genre ids
     genre, document, speciality = data.Sexo_biologico._value_, data.Tipo_documento._value_, data.Especialidad._value_
     genre = get_ids_equivalence(cursor, genre, 'SEXO_BIOLOGICO', 'SIMBOLO')
@@ -72,24 +72,16 @@ async def get_patient_history(data: History=Depends()):
     df = pd.read_sql_query(query, conn)
     if df.empty:
         return {'message': 'No records found for patient'}, 404
-    # html_content = df.to_html(index=False)
-    # with open(os.path.join('inputs', 'html_templates', 'generic.txt'), 'r') as f:
-    #     styled_html = f.readlines()
-    # styled_html = '\n'.join(styled_html).format(data.Documento, len(df), html_content)
-    # path = os.path.join(os.getcwd(), 'output', 'history', f'{data.Documento}_history.html')
-    # with open(path, 'w', encoding='utf-8') as f:
-    #     f.write(styled_html)
-    # webbrowser.open(f'file://{path}')
     generate_html_visual(df, 'generic.txt', str(data.Documento), 'history')
     return {'message': 'Query completed'}, 200
 
 @app.get("/get_agenda_disponible")
 async def get_available_agenda(data: Agenda=Depends()):
     Nombre_medico = data.Nombre_medico
-    Mes_cita = get_ids_equivalence(cursor, data.Mes_cita, 'MES', 'NOMBRE')
-    Hospital_atencion = get_ids_equivalence(cursor, data.Hospital_atencion, 'HOSPITAL', 'NOMBRE')
-    Sexo_biologico_medico = get_ids_equivalence(cursor, data.Sexo_biologico_medico, 'SEXO_BIOLOGICO', 'SIMBOLO')
-    Especialidad_medico = get_ids_equivalence(cursor, data.Especialidad_medico, 'ESPECIALIDAD', 'NOMBRE_ESPECIALIDAD')
+    Mes_cita = get_ids_equivalence(cursor, data.Mes_cita._value_, 'MES', 'NOMBRE')
+    Hospital_atencion = get_ids_equivalence(cursor, data.Hospital_atencion._value_, 'HOSPITAL', 'NOMBRE')
+    Sexo_biologico_medico = get_ids_equivalence(cursor, data.Sexo_biologico_medico._value_, 'SEXO_BIOLOGICO', 'SIMBOLO')
+    Especialidad_medico = get_ids_equivalence(cursor, data.Especialidad_medico._value_, 'ESPECIALIDAD', 'NOMBRE_ESPECIALIDAD')
     queries = {
         'Nombre_medico': f"AND ID_MEDICO IN (SELECT ID_MEDICO FROM MEDICO WHERE LOWER(NOMBRE)) LIKE '%{Nombre_medico.lower()}%'" if len(Nombre_medico) else '',
         'Mes_cita': f"AND CAST(STRFTIME('%m', HORA_INICIO) AS INTEGER)>={Mes_cita}" if Mes_cita else '',
@@ -125,3 +117,13 @@ async def get_available_agenda(data: Agenda=Depends()):
     id_ = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
     generate_html_visual(df, 'generic.txt', id_, 'agenda')
     return {'message': 'Query completed'}, 200
+
+@app.get("/agendar_cita")
+async def book_appointment(data: BookAppointment=Depends()):
+    id_patient = data.Documento_paciente._value_
+    id_swift = data.Id_turno._vale_
+    errors = validate_booking(cursor, id_patient, id_swift)
+    if len(errors):
+        return errors, 404
+    query_cita = f'INSERT INTO AGENDA (ID_PACIENTE, ID_TURNO) VALUES ({data.Documento_paciente}, {data.Id_turno})'
+    
