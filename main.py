@@ -2,10 +2,12 @@ import datetime, sqlite3
 import pandas as pd
 from fastapi import FastAPI, Depends
 
-from src.commons.utils import get_ids_equivalence, general_validation, generate_html_visual
+from src.commons.utils import check_directories, get_ids_equivalence, generate_html_visual, general_validation
 from src.patient.patient_typing import History, Patient
 from src.doctor.doctor_typing import Doctor
 from src.agenda.agenda_typing import Agenda
+
+check_directories()
 
 sqlite3.connect(':memory:')
 conn = sqlite3.connect('medical_bussiness_db')

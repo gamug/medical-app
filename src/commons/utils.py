@@ -2,6 +2,12 @@ import os, re, sqlite3, webbrowser
 import pandas as pd
 from typing import Any
 
+def check_directories():
+    paths = ['output', os.path.join('output', 'agenda'), os.path.join('output', 'history')]
+    for path in paths:
+        if not os.path.exists(path):
+            os.mkdir(path)
+
 def get_list_values(cursor: sqlite3.Cursor, table: str, column: str) -> list[str]:
     cursor.execute(f'SELECT {column} FROM {table}')
     genres = [g[0] for g in cursor.fetchall()]
