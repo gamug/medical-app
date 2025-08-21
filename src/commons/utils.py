@@ -3,7 +3,7 @@ import pandas as pd
 from typing import Any
 
 def check_directories():
-    paths = ['output', os.path.join('output', 'agenda'), os.path.join('output', 'history')]
+    paths = ['output', os.path.join('output', 'agenda'), os.path.join('output', 'history'), os.path.join('output', 'patient_agenda')]
     for path in paths:
         if not os.path.exists(path):
             os.mkdir(path)
@@ -38,9 +38,12 @@ def validate_booking(cursor: sqlite3.Cursor, id_patient: int, id_swift: int) -> 
     cursor.execute(query)
     available = cursor.fetchall()
     if not len(available):
-        errors['Appointment_error'] = f'The swift id {id_swift} isn\'t in the database created as an available appointment'
+        errors['Appointment_nonexisted'] = f'The swift id {id_swift} isn\'t in the database created as an available appointment'
     elif not available[0][0]:
-        errors['Appointment_error'] = f'The swift id {id_swift} is already took by another patient'
+        query = f'SELECT ID_PACIENTE FROM AGENDA WHERE ID_TURNO={id_swift};'
+        cursor.execute(query)
+        patient = cursor.fetchall()[0][0]
+        errors['Appointment_error'] = f'The swift id {id_swift} is already taken by the patient with ID {patient}'
     #validating patient availability for the booking
     query = f'''SELECT TURN.HORA_INICIO AS FECHA FROM
     (SELECT * FROM AGENDA WHERE ID_PACIENTE={id_patient}) AGEND
@@ -48,15 +51,23 @@ def validate_booking(cursor: sqlite3.Cursor, id_patient: int, id_swift: int) -> 
     (SELECT * FROM TURNO) TURN
     ON AGEND.ID_TURNO=TURN.ID_TURNO'''
     cursor.execute(query)
-    patien_availability = cursor.fetchall()
+    patient_availability = cursor.fetchall()
     query = f'SELECT HORA_INICIO FROM TURNO WHERE ID_TURNO={id_swift}'
     cursor.execute(query)
     appointment_date = cursor.fetchall()
-    if len(patien_availability) and not 'Appointment_error' in errors:
-        patien_availability = [value[0] for value in patien_availability]
+    if len(patient_availability) and not 'Appointment_nonexisted' in errors:
+        patient_availability = [value[0] for value in patient_availability]
         appointment_date = appointment_date[0][0]
-        if appointment_date in patien_availability:
+        if appointment_date in patient_availability:
             errors['Patient_unavailability'] = f'The patient {id_patient} already has booked an appointment in the date {appointment_date}'
+    return errors
+
+def validate_agenda(cursor: sqlite3.Cursor, data: Any):
+    errors = dict()
+    cursor.execute("SELECT ID_PACIENTE FROM PACIENTE")
+    patients = [id_[0] for id_ in cursor.fetchall()]
+    if not data.Documento_paciente in patients:
+        errors['Document_error'] = f'The document {data.Documento_paciente} is not registered as patient in the database'
     return errors
 
 def generate_html_visual(df: pd.DataFrame, template: str, id_: str, suffix: str) -> None:
@@ -68,3 +79,19 @@ def generate_html_visual(df: pd.DataFrame, template: str, id_: str, suffix: str)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(styled_html)
     webbrowser.open(f'file://{path}')
+
+def book_appointment(conn: sqlite3.Connection, id_patient: int, id_swift: int) -> None:
+    query_cita = f'INSERT INTO AGENDA (ID_PACIENTE, ID_TURNO) VALUES ({id_patient}, {id_swift})'
+    conn.execute(query_cita)
+    conn.commit()
+    query_cita = f'UPDATE TURNO SET DISPONIBLE=FALSE WHERE ID_TURNO={id_swift}'
+    conn.execute(query_cita)
+    conn.commit()
+
+def delete_appointment(conn: sqlite3.Connection, id_swift: int) -> None:
+    query_cita = f'DELETE FROM AGENDA WHERE ID_TURNO={id_swift};'
+    conn.execute(query_cita)
+    conn.commit()
+    query_cita = f'UPDATE TURNO SET DISPONIBLE=TRUE WHERE ID_TURNO={id_swift}'
+    conn.execute(query_cita)
+    conn.commit()

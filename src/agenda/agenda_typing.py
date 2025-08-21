@@ -28,3 +28,13 @@ class Agenda(BaseModel):
 class BookAppointment(BaseModel):
     Documento_paciente: int = 13431341
     Id_turno: int = 640266
+
+class DeleteAppointment(BaseModel):
+    Id_turno: int = 640266
+
+class EditAppointment(BaseModel):
+    Id_turno_viejo: int = 640266
+    Id_turno_nuevo: int = 640267
+
+class PatientAgenda(BaseModel):
+    Documento_paciente: int = 13431341
