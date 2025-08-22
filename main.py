@@ -24,11 +24,18 @@ app = FastAPI(
 
 @app.get("/")
 def read_root():
+    '''Main page for the medical app
+    Returns a message indicating the main page of the app'''
     return {"Medical API": "This is the main page for the medical app. To access the swagger enter to the URL http://127.0.0.1:8000/docs#/"}
 
 @app.get("/adicionar_paciente")
 async def add_patient(data: Patient=Depends()):
-    """Adicionar paciente"""
+    '''add patient to the database
+    Parameters:
+    data: Patient - the swager formulary data with the patient to be added
+    Returns:
+    dict - a dictionary with the message indicating the patient was added or an error message if the patient could not be added
+    '''
     errors = utils.general_validation(cursor, data)
     if len(errors):
         return errors, 404
@@ -47,7 +54,12 @@ async def add_patient(data: Patient=Depends()):
 
 @app.get("/adicionar_medico")
 async def add_doctor(data: Doctor=Depends()):
-    """Adicionar medico"""
+    '''add doctor to the database
+    Parameters:
+    data: Doctor - the swager formulary data with the doctor to be added
+    Returns:
+    dict - a dictionary with the message indicating the doctor was added or an error message if the doctor could not be added
+    '''
     errors = utils.general_validation(cursor, data)
     if len(errors):
         return errors, 404
@@ -67,6 +79,12 @@ async def add_doctor(data: Doctor=Depends()):
 
 @app.get("/consultar_historia_paciente")
 async def get_patient_history(data: History=Depends()):
+    '''Get the history of a patient
+    Parameters:
+    data: History - the swager formulary data with the patient to get the history for
+    Returns:
+    dict - a dictionary with the message indicating the query was completed or an error message if the patient history could not be found
+    '''
     query = f"""SELECT SINTOMATOLOGIA, DIAGNOSTICO, MEDICACION, COMENTARIOS FROM HISTORIA WHERE ID_CITA IN (
     SELECT ID_CITA FROM AGENDA WHERE ID_PACIENTE={data.Documento}
         )"""
@@ -78,6 +96,12 @@ async def get_patient_history(data: History=Depends()):
 
 @app.get("/consultar_agenda_disponible")
 async def get_available_agenda(data: Agenda=Depends()):
+    '''Get the available agenda for a doctor
+    Parameters:
+    data: Agenda - the swager formulary data with the doctor description to get the available agenda for
+    Returns:
+    dict - a dictionary with the message indicating the query was completed or an error message if the agenda could not be found
+    '''
     df = utils.manage_agend(conn, cursor, data, available_appointment=True)
     id_ = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
     utils.generate_html_visual(df, 'generic.txt', id_, 'agenda')
@@ -85,6 +109,12 @@ async def get_available_agenda(data: Agenda=Depends()):
 
 @app.get("/consultar_agenda_doctor")
 async def get_doctor_agenda(data: Agenda=Depends()):
+    '''Get the agenda for a doctor
+    Parameters:
+    data: Agenda - the swager formulary data with the doctor description to get the agenda for
+    Returns:
+    dict - a dictionary with the message indicating the query was completed or an error message if the agenda could not be found
+    '''
     df = utils.manage_agend(conn, cursor, data, available_appointment=False)
     id_ = datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
     utils.generate_html_visual(df, 'generic.txt', id_, 'agenda')
@@ -92,6 +122,12 @@ async def get_doctor_agenda(data: Agenda=Depends()):
 
 @app.get("/agendar_cita")
 async def book_appointment(data: BookAppointment=Depends()):
+    '''Book an appointment for a patient with a doctor
+    Parameters:
+    data: BookAppointment - the swager formulary data with the patient and appointment to be booked
+    Returns:
+    dict - a dictionary with the message indicating the query was completed or an error message if the booking could not be completed
+    '''
     id_patient = data.Documento_paciente
     id_swift = data.Id_turno
     errors = utils.validate_booking(cursor, id_patient, id_swift)
@@ -102,12 +138,24 @@ async def book_appointment(data: BookAppointment=Depends()):
 
 @app.get("/eliminar_cita")
 async def delete_appointment(data: DeleteAppointment=Depends()):
+    '''Delete an appointment by its ID
+    Parameters:
+    data: DeleteAppointment - the swager formulary data with the appointment to be deleted
+    Returns:
+    dict - a dictionary with the message indicating the query was completed or an error message if the appointment could not be deleted
+    '''
     id_swift = data.Id_turno
     utils.delete_appointment(conn, id_swift)
     return {'message': 'Query completed'}, 200
 
 @app.get("/editar_cita")
 async def edit_appointment(data: EditAppointment=Depends()):
+    '''Edit an appointment by its ID
+    Parameters:
+    data: EditAppointment - the swager formulary data with the old and new appointment IDs
+    Returns:
+    dict - a dictionary with the message indicating the appointment was changed or an error message if the appointment could not be changed
+    '''
     old_id_swift = data.Id_turno_viejo
     new_id_swift = data.Id_turno_nuevo
     id_patient = f'SELECT ID_PACIENTE FROM AGENDA WHERE ID_TURNO={old_id_swift};'
@@ -129,6 +177,12 @@ async def edit_appointment(data: EditAppointment=Depends()):
 
 @app.get("/consultar_agenda_paciente")
 async def get_patient_agenda(data: PatientAgenda=Depends()):
+    '''Get the agenda for a patient
+    Parameters:
+    data: PatientAgenda - the swager formulary data with the patient to get the agenda for
+    Returns:
+    dict - a dictionary with the message indicating the query was completed or an error message if the agenda could not be found
+    '''
     query = f'''SELECT PAT_AGEND_TURN_MED_ESP_SEX_CONS.ID_TURNO, PAT_AGEND_TURN_MED_ESP_SEX_CONS.NOMBRE_PACIENTE,
     PAT_AGEND_TURN_MED_ESP_SEX_CONS.DOCUMENTO, PAT_AGEND_TURN_MED_ESP_SEX_CONS.CORREO, 
     PAT_AGEND_TURN_MED_ESP_SEX_CONS.TELEFONO, PAT_AGEND_TURN_MED_ESP_SEX_CONS.FECHA_CITA,

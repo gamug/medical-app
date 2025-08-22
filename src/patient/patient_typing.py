@@ -12,6 +12,14 @@ documents = get_list_values(cursor, 'TIPO_DOCUMENTO', 'NOMBRE_DOCUMENTO')
 
 
 class Patient(BaseModel):
+    '''Patient data model
+    Documento is the ID of the patient
+    Tipo_documento is the type of document of the patient
+    Nombre is the name of the patient
+    Telefono is the phone number of the patient
+    Correo is the email of the patient
+    Sexo_biologico is the biological genre of the patient
+    '''
     Tipo_documento: DocumentTypes.create(documents) = documents[0]
     Documento: int
     Nombre: str
@@ -20,4 +28,7 @@ class Patient(BaseModel):
     Sexo_biologico: BiologicalGenre.create(genres) = genres[0]
 
 class History(BaseModel):
+    '''Patient history data model
+    Documento is the ID of the patient
+    '''
     Documento: int = 74125896

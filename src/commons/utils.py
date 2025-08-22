@@ -3,17 +3,35 @@ import pandas as pd
 from typing import Any, Optional
 
 def check_directories():
+    '''Check if the necessary directories exist, if not, create them'''
     paths = ['output', os.path.join('output', 'agenda'), os.path.join('output', 'history'), os.path.join('output', 'patient_agenda')]
     for path in paths:
         if not os.path.exists(path):
             os.mkdir(path)
 
 def get_list_values(cursor: sqlite3.Cursor, table: str, column: str) -> list[str]:
+    '''Get a list of values from a specific column in a table
+    parameters:
+    cursor: sqlite3.Cursor - the cursor to execute the query
+    table: str - the name of the table to query
+    column: str - the name of the column to get values from
+    returns:
+    list[str] - a list of values from the specified column
+    '''
     cursor.execute(f'SELECT {column} FROM {table}')
     genres = [g[0] for g in cursor.fetchall()]
     return genres
 
 def get_ids_equivalence(cursor: sqlite3.Cursor, value: str, table: str, column_filter) -> tuple[int]:
+    '''Get the id of a value id in a specific table
+    parameters:
+    cursor: sqlite3.Cursor - the cursor to execute the query
+    value: str - the value to search for
+    table: str - the name of the table to query
+    column_filter: str - the name of the column to filter by
+    returns:
+    tuple[int] - the id of the value in the specified table
+    '''
     query = f"SELECT ID_{table} FROM {table} WHERE {column_filter}='{value}'"
     cursor.execute(query)
     value = cursor.fetchall()
@@ -21,6 +39,13 @@ def get_ids_equivalence(cursor: sqlite3.Cursor, value: str, table: str, column_f
     return value
 
 def general_validation(cursor: sqlite3.Cursor, data: Any) -> dict:
+    '''General validation for the data
+    parameters:
+    cursor: sqlite3.Cursor - the cursor to execute the query
+    data: Any - the swagger formulary data to validate
+    returns:
+    dict - a dictionary with the errors found in the data inputs
+    '''
     errors = {}
     #extra validations
     if not re.match('[a-z0-9_]+@[a-z0-9_]+\.com', data.Correo, flags=re.IGNORECASE):
@@ -32,6 +57,14 @@ def general_validation(cursor: sqlite3.Cursor, data: Any) -> dict:
     return errors
 
 def validate_booking(cursor: sqlite3.Cursor, id_patient: int, id_swift: int) -> dict:
+    '''Validate the booking of an appointment searching for errors in the input data
+    parameters:
+    cursor: sqlite3.Cursor - the cursor to execute the query
+    id_patient: int - the ID of the patient to book the appointment for
+    id_swift: int - the ID of the appointment to be booked
+    returns:
+    dict - a dictionary with the errors found in the booking process
+    '''
     errors = {}
     #validating apointment availability
     query = f'SELECT DISPONIBLE FROM TURNO WHERE ID_TURNO={id_swift}'
@@ -63,6 +96,13 @@ def validate_booking(cursor: sqlite3.Cursor, id_patient: int, id_swift: int) -> 
     return errors
 
 def validate_agenda(cursor: sqlite3.Cursor, data: Any):
+    '''Validate the agenda searching for errors in the input data
+    parameters:
+    cursor: sqlite3.Cursor - the cursor to execute the query
+    data: Any - the swagger formulary data to validate
+    returns:
+    dict - a dictionary with the errors found in the agenda data
+    '''
     errors = dict()
     cursor.execute("SELECT ID_PACIENTE FROM PACIENTE")
     patients = [id_[0] for id_ in cursor.fetchall()]
@@ -112,6 +152,15 @@ def manage_agend(conn: sqlite3.Connection, cursor: sqlite3.Cursor, data: Any, av
     return df
 
 def generate_html_visual(df: pd.DataFrame, template: str, id_: str, suffix: str) -> None:
+    '''Generate an HTML file from a DataFrame and a template
+    parameters:
+    df: pd.DataFrame - the DataFrame to convert to HTML
+    template: str - the name of the template file to use
+    id_: str - the ID to include in the HTML file name
+    suffix: str - the suffix to include in the HTML file name. Is also the folder where the HTML file will be saved
+    returns:
+    None - the function writes the HTML file to the output directory and opens it in a web browser
+    '''
     html_content = df.to_html(index=False)
     with open(os.path.join('inputs', 'html_templates', template), 'r') as f:
         styled_html = f.readlines()
@@ -122,6 +171,14 @@ def generate_html_visual(df: pd.DataFrame, template: str, id_: str, suffix: str)
     webbrowser.open(f'file://{path}')
 
 def book_appointment(conn: sqlite3.Connection, id_patient: int, id_swift: int) -> None:
+    '''Book an appointment for a patient with a doctor
+    parameters:
+    conn: sqlite3.Connection - the connection to the database
+    id_patient: int - the ID of the patient to book the appointment for
+    id_swift: int - the ID of the appointment to be booked
+    returns:
+    None - the function writes the appointment to the database and updates the appointment status
+    '''
     query_cita = f'INSERT INTO AGENDA (ID_PACIENTE, ID_TURNO) VALUES ({id_patient}, {id_swift})'
     conn.execute(query_cita)
     conn.commit()
@@ -130,6 +187,13 @@ def book_appointment(conn: sqlite3.Connection, id_patient: int, id_swift: int) -
     conn.commit()
 
 def delete_appointment(conn: sqlite3.Connection, id_swift: int) -> None:
+    '''Delete an appointment by its ID
+    parameters:
+    conn: sqlite3.Connection - the connection to the database
+    id_swift: int - the ID of the appointment to be deleted
+    returns:
+    None - the function deletes the appointment from the database and updates the appointment status
+    '''
     query_cita = f'DELETE FROM AGENDA WHERE ID_TURNO={id_swift};'
     conn.execute(query_cita)
     conn.commit()

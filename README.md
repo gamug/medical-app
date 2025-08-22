@@ -122,7 +122,7 @@ Filter database to know the doctor agenda. In case that the query return any res
 <li><b>Sexo_biologico_medico: </b>String optional. Dropdown list containing the biological sex convention (F: Female, M. Male).</li>
 <li><b>Hospital_atencion: </b> String optional. Dropdown list with the full available hospital to take appointments.</li>
 </ul>
-<h3>"/agendar_cita</h3>
+<h3>"/agendar_cita"</h3>
 Let the user book an appointment reserving the space to the patient specified. This functionality add a register in the table <code>AGENDA</code> and update the table <code>TURNO</code> to set column <code>DISPONIBLE</code> to false, so any other patient could take that appointment. This functionality has the following fields:
 <ul>
 <li><b>Documento_paciente: </b>Integer required. Text box with the patient document.</li>

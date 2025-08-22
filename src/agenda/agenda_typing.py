@@ -26,15 +26,29 @@ class Agenda(BaseModel):
     Hospital_atencion: Hospitals.create(hospitals) = '--'
 
 class BookAppointment(BaseModel):
+    '''Book an appointment for a patient with a doctor
+    Documento_paciente is the ID of the patient
+    Id_turno is the ID of the appointment to be booked
+    '''
     Documento_paciente: int = 13431341
     Id_turno: int = 640266
 
 class DeleteAppointment(BaseModel):
+    '''Delete an appointment by its ID
+    Id_turno is the ID of the appointment to be deleted
+    '''
     Id_turno: int = 640266
 
 class EditAppointment(BaseModel):
+    '''Edit an appointment by its ID
+    Id_turno_viejo is the ID of the appointment to be edited
+    Id_turno_nuevo is the new appointment ID
+    '''
     Id_turno_viejo: int = 640266
     Id_turno_nuevo: int = 640267
 
 class PatientAgenda(BaseModel):
+    '''Patient agenda data
+    Documento_paciente is the ID of the patient
+    '''
     Documento_paciente: int = 13431341
