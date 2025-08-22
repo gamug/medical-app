@@ -113,6 +113,15 @@ Filter database to know the available agenda. In case that the query return any 
 <li><b>Sexo_biologico_medico: </b>String optional. Dropdown list containing the biological sex convention (F: Female, M. Male).</li>
 <li><b>Hospital_atencion: </b> String optional. Dropdown list with the full available hospital to take appointments.</li>
 </ul>
+<h3>"/consultar_agenda_doctor"</h3>
+Filter database to know the doctor agenda. In case that the query return any results the code launch a HTML view containing a table with the doctor agenda filtered by the fields provided. This is only provided by the took appointments. The fields to filter are:
+<ul>
+<li><b>Nombre_medico: </b>String optional. Text box that inputs the name of the doctor.</li>
+<li><b>Mes_cita: </b> String optional. Dropdown list containing the month in which the appointment will happen.</li>
+<li><b>Especialidad_medico: </b> String optional. Dropdown list containing the possible doctor specialties.</li>
+<li><b>Sexo_biologico_medico: </b>String optional. Dropdown list containing the biological sex convention (F: Female, M. Male).</li>
+<li><b>Hospital_atencion: </b> String optional. Dropdown list with the full available hospital to take appointments.</li>
+</ul>
 <h3>"/agendar_cita</h3>
 Let the user book an appointment reserving the space to the patient specified. This functionality add a register in the table <code>AGENDA</code> and update the table <code>TURNO</code> to set column <code>DISPONIBLE</code> to false, so any other patient could take that appointment. This functionality has the following fields:
 <ul>
@@ -130,3 +139,14 @@ Using this functionality modifies previous swift ID and set a new one to the sam
 <h3>"/consultar_agenda_paciente"</h3>
 Let user know previous and coming patient appointments. This functionality only has a simple input field "Documento_paciente" (Integer required input by a text box). In case that the query return any results the code launch a HTML view containing a table with the patient appointment history.
 </p>
+
+
+<hgroup>
+<h1>Next steps and further improvements</h1>
+</hgroup>
+<ul>
+<li>Develop the functionality to delete patients</li>
+<li>Develop the functionality to erase doctors</li>
+<li>Develop the functionality to edit the medical history once the doctor has the appointment.</li>
+<li>Build an user interface (UI/UX work)</li>
+</ul>
